@@ -12,8 +12,6 @@ import org.swiggy.orderservice.DTO.UserRequestDTO;
 import org.swiggy.orderservice.Exception.ResourceAlreadyExistsException;
 import org.swiggy.orderservice.Model.User;
 
-import java.util.Objects;
-import java.util.Optional;
 
 
 @Service
@@ -31,7 +29,7 @@ public class UserService implements UserDetailsService {
     public User createUser(UserRequestDTO userRequest) {
         try {
             String encodedPassword = passwordEncoder.encode(userRequest.getPassword());
-            User user = new User(userRequest.getUsername(), encodedPassword, userRequest.getRole());
+            User user = new User(userRequest.getUsername(), encodedPassword);
             return userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
             throw new ResourceAlreadyExistsException("User already exists");
@@ -45,14 +43,5 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
 
-    public boolean validateUser(Long userId, String username) {
-        Optional<User> user = userRepository.findById(userId);
-        if(user.isEmpty()){
-            return false;
-        }
-        if (!Objects.equals(user.get().getUsername(), username)) {
-            return false;
-        }
-        return true;
-    }
+
 }
