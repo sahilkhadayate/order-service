@@ -1,6 +1,7 @@
 package org.swiggy.order.Service.UserService;
 
 
+import org.swiggy.order.Exception.InvalidUserException;
 import org.swiggy.order.Repository.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,7 +16,7 @@ import org.swiggy.order.Model.User;
 
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserService {
 
     private final UserRepository userRepository;
 
@@ -37,11 +38,15 @@ public class UserService implements UserDetailsService {
     }
 
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    public User authenticateUser(String username, Long userId) {
+            if (username==null || username.isEmpty()) {
+                throw new InvalidUserException("invalid user");
+            }
+            User user = userRepository.getReferenceById(userId);
+            if (!user.verifyUser(username)) {
+                throw new InvalidUserException("invalid user");
+            }
+            return user;
+
     }
-
-
 }
