@@ -1,16 +1,16 @@
-package org.swiggy.orderservice.Service;
+package org.swiggy.order.Service.UserService;
 
 
-import org.swiggy.orderservice.Repository.UserRepository;
+import org.swiggy.order.Repository.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.swiggy.orderservice.DTO.UserRequestDTO;
-import org.swiggy.orderservice.Exception.ResourceAlreadyExistsException;
-import org.swiggy.orderservice.Model.User;
+import org.swiggy.order.DTO.UserRequestDTO;
+import org.swiggy.order.Exception.ResourceAlreadyExistsException;
+import org.swiggy.order.Model.User;
 
 
 

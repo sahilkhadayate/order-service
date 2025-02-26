@@ -1,4 +1,4 @@
-package org.swiggy.orderservice.Exception;
+package org.swiggy.order.Exception;
 
 public class ResourceAlreadyExistsException extends RuntimeException {
     public ResourceAlreadyExistsException(String message) {

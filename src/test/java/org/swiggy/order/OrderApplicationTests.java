@@ -1,10 +1,10 @@
-package org.swiggy.orderservice;
+package org.swiggy.order;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class OrderserviceApplicationTests {
+class OrderApplicationTests {
 
     @Test
     void contextLoads() {

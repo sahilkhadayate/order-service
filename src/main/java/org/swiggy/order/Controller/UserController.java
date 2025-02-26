@@ -1,4 +1,4 @@
-package org.swiggy.orderservice.Controller;
+package org.swiggy.order.Controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.swiggy.orderservice.DTO.UserRequestDTO;
-import org.swiggy.orderservice.Service.UserService;
+import org.swiggy.order.DTO.UserRequestDTO;
+import org.swiggy.order.Service.UserService.UserService;
 
 @RestController
 @RequestMapping("/users")

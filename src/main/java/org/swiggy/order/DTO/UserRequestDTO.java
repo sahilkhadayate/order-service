@@ -1,4 +1,4 @@
-package org.swiggy.orderservice.DTO;
+package org.swiggy.order.DTO;
 
 public class UserRequestDTO {
 

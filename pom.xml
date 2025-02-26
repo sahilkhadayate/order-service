@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>org.swiggy</groupId>
-    <artifactId>orderservice</artifactId>
+    <artifactId>order</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>orderservice</name>
     <description>orderservice</description>
