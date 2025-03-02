@@ -5,15 +5,11 @@ import org.springframework.security.access.AccessDeniedException;
 import org.swiggy.order.Exception.InvalidUserException;
 import org.swiggy.order.Repository.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.swiggy.order.DTO.UserRequestDTO;
 import org.swiggy.order.Exception.ResourceAlreadyExistsException;
 import org.swiggy.order.Model.User;
-
 
 
 @Service

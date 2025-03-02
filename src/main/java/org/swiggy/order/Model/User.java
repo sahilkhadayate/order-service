@@ -22,7 +22,7 @@ public class User implements UserDetails {
     private String password;
 
     @NotBlank(message = "Username is required")
-    @Column(name = "user_name", unique = true)
+    @Column(name = "username", unique = true)
     private String username;
 
     public User(String username, String encodedPassword) {

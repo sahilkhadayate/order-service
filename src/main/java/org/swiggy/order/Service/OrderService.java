@@ -7,7 +7,6 @@ import org.swiggy.order.Exception.ResourceDoesNotExistException;
 import org.swiggy.order.Model.Money;
 import org.swiggy.order.Model.Order;
 import org.swiggy.order.Model.OrderItem;
-import org.swiggy.order.Model.User;
 import org.swiggy.order.Service.External.CatalogServiceClient;
 import org.swiggy.order.Service.UserService.UserService;
 
@@ -40,9 +39,11 @@ public class OrderService {
             orderItems.add(orderItem);
         }
         Order order = new Order(orderRequestDTO.getRestaurantId(), orderItems);
+        System.out.println("======================================================");
         for (Map.Entry<Long, Money> entry : menuItemPrices.entrySet()) {
             System.out.println("MenuItem ID: " + entry.getKey() + ", Price: " + entry.getValue());
         }
+        System.out.println("======================================================");
 
     }
 }
