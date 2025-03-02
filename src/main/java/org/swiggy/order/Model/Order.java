@@ -13,6 +13,8 @@ public class Order {
     @Positive(message = "Restaurant id is required")
     private Long restaurantId;
 
+    private double totalAmount;
+
     public Order() {
     }
 
@@ -26,5 +28,13 @@ public class Order {
 
     public Long getRestaurantId() {
         return restaurantId;
+    }
+
+    public double getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(double totalAmount) {
+        this.totalAmount = totalAmount;
     }
 }
