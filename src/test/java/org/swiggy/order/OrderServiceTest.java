@@ -111,21 +111,20 @@ public class OrderServiceTest {
         when(catalogServiceClient.getMenuItemPrices(1L)).thenReturn(menuItemPrices);
 
         // Act
-        orderService.createOrder(requestDTO);
+        Order order = orderService.createOrder(requestDTO);
 
         // Assert: Capture order and order items
-        ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
-        verify(orderRepository).save(orderCaptor.capture());
-        Order savedOrder = orderCaptor.getValue();
-        assertEquals(1L, savedOrder.getRestaurantId());
+        verify(orderRepository).save(order);
+        assertEquals(1L, order.getRestaurantId());
 
         ArgumentCaptor<OrderItem> orderItemCaptor = ArgumentCaptor.forClass(OrderItem.class);
         verify(orderItemRepository, times(2)).save(orderItemCaptor.capture());
         List<OrderItem> savedOrderItems = orderItemCaptor.getAllValues();
 
+
         assertEquals(2, savedOrderItems.size());
-        assertEquals(101L, savedOrderItems.get(0).getOrder().getId());
-        assertEquals(102L, savedOrderItems.get(1).getOrder().getId());
+        assertEquals(10, savedOrderItems.get(0).getPrice().getAmount());
+        assertEquals(5, savedOrderItems.get(1).getPrice().getAmount());
     }
 
 }
