@@ -1,6 +1,7 @@
 package org.swiggy.order.Service.UserService;
 
 
+import org.springframework.security.access.AccessDeniedException;
 import org.swiggy.order.Exception.InvalidUserException;
 import org.swiggy.order.Repository.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -44,7 +45,7 @@ public class UserService {
             }
             User user = userRepository.getReferenceById(userId);
             if (!user.verifyUser(username)) {
-                throw new InvalidUserException("invalid user");
+                throw new AccessDeniedException("access denied");
             }
             return user;
 
