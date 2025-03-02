@@ -27,18 +27,17 @@ public class OrderService {
     }
 
     public void createOrder(OrderRequestDTO orderRequestDTO) throws ResourceDoesNotExistException {
-        List<OrderItem> orderItems = new ArrayList<>();
         Map<Long, Money> menuItemPrices = catalogServiceClient.getMenuItemPrices(orderRequestDTO.getRestaurantId());
         if (menuItemPrices.isEmpty()) {
             throw new ResourceDoesNotExistException("No menu items found for restaurant");
         }
+        Order order = new Order(orderRequestDTO.getRestaurantId());
         for (MenuItemDTO item: orderRequestDTO.getOrderItems()) {
-            OrderItem orderItem = new OrderItem(item);
+            OrderItem orderItem = new OrderItem(item, order);
             Money price = menuItemPrices.get(item.getId());
             orderItem.setPrice(price);
-            orderItems.add(orderItem);
+
         }
-        Order order = new Order(orderRequestDTO.getRestaurantId(), orderItems);
         System.out.println("======================================================");
         for (Map.Entry<Long, Money> entry : menuItemPrices.entrySet()) {
             System.out.println("MenuItem ID: " + entry.getKey() + ", Price: " + entry.getValue());
