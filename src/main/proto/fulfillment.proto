@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package fulfillment;
+
+
+service Fulfillment {
+  rpc placeOrder (orderRequest) returns (orderResponse) {}
+  rpc createDE (deRequest) returns (deResponse) {}
+  rpc updateOrderStatus (orderStatusRequest) returns (updateStatusResponse) {}
+}
+
+
+message item{
+  string name = 1;
+  int32 quantity = 2;
+}
+
+message orderRequest {
+  uint64 order_id = 1;
+  uint64 customer_id = 3;
+  restaurant restaurant = 2;
+  repeated item items = 4;
+  uint64 total = 5;
+}
+
+message restaurant {
+  uint64 restaurant_id = 1;
+  string name = 2;
+  string location = 3;
+}
+
+message orderResponse {
+  uint64 order_id = 1;
+  string status = 2;
+  deliveryExecutive de = 3;
+}
+
+message deRequest{
+  string name = 1;
+  string password = 2;
+  string location = 3;
+}
+
+message deResponse{
+  uint64 de_id = 1;
+}
+
+message orderStatusRequest{
+  uint64 order_id = 1;
+  status status = 2;
+}
+
+message updateStatusResponse{
+  status status = 1;
+}
+
+message deliveryExecutive{
+  uint64 de_id = 1;
+  string name = 2;
+  string location = 3;
+}
+
+enum status{
+  ACCEPTED = 0;
+  IN_TRANSIT = 1;
+  DELIVERED = 2;
+}

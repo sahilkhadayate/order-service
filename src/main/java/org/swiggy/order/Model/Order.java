@@ -1,40 +1,53 @@
 package org.swiggy.order.Model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Getter;
+import lombok.Setter;
+import org.swiggy.order.Enum.OrderStatus;
 
 @Entity
 @Table(name = "orders")
 public class Order {
+
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Getter
+    @NotNull
     @Positive(message = "Restaurant id is required")
     private Long restaurantId;
 
+    @Setter
+    @Getter
+    @Embedded
     private Money totalAmount;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
 
     public Order() {
     }
 
     public Order(@Positive(message = "Restaurant id is required") Long restaurantId) {
         this.restaurantId = restaurantId;
+        totalAmount = new Money();
+        this.status = OrderStatus.ACCEPTED;
     }
 
-    public Long getId() {
-        return id;
+    public OrderStatus getStatus() {
+        return status;
     }
 
-    public Long getRestaurantId() {
-        return restaurantId;
+    public void setStatus(OrderStatus status) {
+        this.status = status;
     }
 
-    public Money getTotalAmount() {
-        return totalAmount;
-    }
 
-    public void setTotalAmount(Money totalAmount) {
-        this.totalAmount = totalAmount;
+    public void setId(Long orderId) {
+    this.id = orderId;
     }
 }

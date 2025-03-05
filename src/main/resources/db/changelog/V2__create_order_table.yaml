@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1740922448600-6
+      author: sahil.khadayate_ftc
+      changes:
+        - addColumn:
+            tableName: orders
+            columns:
+              - column:
+                  name: status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                  defaultValue: 'ACCEPTED'
+        - update:
+            tableName: orders
+            columns:
+              - column:
+                  name: status
+                  value: 'ACCEPTED'

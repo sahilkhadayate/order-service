@@ -39,4 +39,12 @@ public class OrderItem {
     public Order getOrder() {
         return order;
     }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }

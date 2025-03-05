@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1740923000001
+      author: sahil khadayate
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            tableName: orders
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_orders
+              - column:
+                  name: restaurant_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    checkConstraint: "restaurant_id > 0"
+              - column:
+                  name: amount
+                  type: DECIMAL(19,4)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: currency
+                  type: VARCHAR(3)
+                  constraints:
+                    nullable: false

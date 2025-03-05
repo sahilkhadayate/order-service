@@ -4,13 +4,13 @@ package org.swiggy.order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.swiggy.order.DTO.MenuItemDTO;
 import org.swiggy.order.DTO.OrderRequestDTO;
+import org.swiggy.order.Enum.OrderStatus;
 import org.swiggy.order.Exception.InvalidUserException;
 import org.swiggy.order.Exception.ResourceDoesNotExistException;
 import org.swiggy.order.Model.Money;
@@ -21,7 +21,6 @@ import org.swiggy.order.Repository.OrderRepository;
 import org.swiggy.order.Service.External.CatalogServiceClient;
 import org.swiggy.order.Service.OrderService;
 import org.swiggy.order.Service.UserService.UserService;
-
 import java.util.Currency;
 import java.util.List;
 import java.util.Map;
@@ -31,24 +30,24 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+
 @ExtendWith(MockitoExtension.class)
 public class OrderServiceTest {
 
 
-    @MockitoBean
+    @Mock
     private UserService userService;
 
-    @MockitoBean
+    @Mock
     private OrderRepository orderRepository;
 
-    @MockitoBean
+    @Mock
     private OrderItemRepository orderItemRepository;
 
-    @Autowired
+    @InjectMocks
     private OrderService orderService;
 
-    @MockitoBean
+    @Mock
     private CatalogServiceClient catalogServiceClient;
 
 
@@ -125,6 +124,32 @@ public class OrderServiceTest {
         assertEquals(2, savedOrderItems.size());
         assertEquals(10, savedOrderItems.get(0).getPrice().getAmount());
         assertEquals(5, savedOrderItems.get(1).getPrice().getAmount());
+    }
+
+    @Test
+    public void test_UpdateOrderStatusThrowsExceptionWhenTheRestaurantIdDoesNotExist() {
+
+        when(orderRepository.findByIdAndRestaurantId(1L, 1L)).thenReturn(null);
+        assertThrows(ResourceDoesNotExistException.class,()->orderService.updateOrderStatus(1L, 1L));
+        verify(orderRepository, times(1)).findByIdAndRestaurantId(1L, 1L);
+    }
+
+    @Test
+    public void testUpdateOrderStatus_ChangesOrderStatus() throws ResourceDoesNotExistException {
+        // Arrange
+        Long restaurantId = 1L;
+        Long orderId = 1L;
+        Order order = new Order(restaurantId);
+        order.setId(orderId);
+
+        when(orderRepository.findByIdAndRestaurantId(orderId, restaurantId)).thenReturn(order);
+
+        // Act
+        orderService.updateOrderStatus(restaurantId, orderId);
+
+        // Assert
+        assertEquals(OrderStatus.DELIVERED, order.getStatus());
+        verify(orderRepository, times(1)).save(order);
     }
 
 }

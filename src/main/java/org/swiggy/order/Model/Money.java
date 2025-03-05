@@ -27,10 +27,11 @@ public class Money {
         this.currency = Currency.getInstance("INR");
     }
 
-    public void add(Money money) {
+    public Money add(Money money) {
         if (!this.currency.equals(money.currency)) {
             throw new IllegalArgumentException();
         }
         this.amount += money.amount;
+        return this;
     }
 }
