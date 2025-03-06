@@ -4,6 +4,7 @@ import jakarta.persistence.Embeddable;
 import lombok.Getter;
 
 import java.util.Currency;
+import java.util.Objects;
 
 @Embeddable
 public class Money {
@@ -33,5 +34,19 @@ public class Money {
         }
         this.amount += money.amount;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Money money = (Money) o;
+        return Double.compare(money.amount, amount) == 0 &&
+                (Objects.equals(currency.getCurrencyCode(), money.currency.getCurrencyCode()));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(amount, currency);
     }
 }

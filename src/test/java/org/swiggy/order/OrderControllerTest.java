@@ -69,7 +69,7 @@ public class OrderControllerTest {
     @Test
     void testOrderCreationThrowsBadRequestForInvalidRestaurantId() throws Exception {
         List<MenuItemDTO> items = new ArrayList<>();
-        items.add( new MenuItemDTO(1L,3));
+        items.add( new MenuItemDTO(1L,3,"name"));
 
         orderRequestDTO = new OrderRequestDTO(-3L, items);
 
@@ -83,7 +83,7 @@ public class OrderControllerTest {
     @Test
     void testOrderCreationSuccessWhenOrderIsCreatedSuccessfully() throws Exception {
         List<MenuItemDTO> items = new ArrayList<>();
-        items.add( new MenuItemDTO(1L,3));
+        items.add( new MenuItemDTO(1L,3,"name"));
 
         orderRequestDTO = new OrderRequestDTO(3L, items);
 
@@ -98,7 +98,7 @@ public class OrderControllerTest {
         when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Invalid Credentials"));
 
         List<MenuItemDTO> items = new ArrayList<>();
-        items.add( new MenuItemDTO(1L,3));
+        items.add( new MenuItemDTO(1L,3,"name"));
 
         orderRequestDTO = new OrderRequestDTO(3L, items);
 

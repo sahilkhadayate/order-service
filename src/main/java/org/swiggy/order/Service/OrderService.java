@@ -1,7 +1,6 @@
 package org.swiggy.order.Service;
 
 import org.springframework.stereotype.Service;
-import org.swiggy.order.DTO.MenuItemDTO;
 import org.swiggy.order.DTO.OrderRequestDTO;
 import org.swiggy.order.Enum.OrderStatus;
 import org.swiggy.order.Exception.ResourceDoesNotExistException;
@@ -13,10 +12,10 @@ import org.swiggy.order.Repository.OrderRepository;
 import org.swiggy.order.Service.External.CatalogServiceClient;
 import org.swiggy.order.Service.UserService.UserService;
 
-import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -69,39 +68,43 @@ public class OrderService {
 //        return order;
 //    }
 
-    public Order createOrder(OrderRequestDTO orderRequestDTO) throws ResourceDoesNotExistException {
+    public Order createOrder(OrderRequestDTO orderRequestDTO, Long userId) throws ResourceDoesNotExistException {
+
         Map<Long, Money> menuItemPrices = catalogServiceClient.getMenuItemPrices(orderRequestDTO.getRestaurantId());
+
         if (menuItemPrices.isEmpty()) {
             throw new ResourceDoesNotExistException("No menu items found for restaurant");
         }
 
         Order order = new Order(orderRequestDTO.getRestaurantId());
         order = orderRepository.save(order);
+        Order finalOrder = order;
 
         List<OrderItem> orderItems = createOrderItems(orderRequestDTO, menuItemPrices, order);
-        Money totalAmount = calculateTotalAmount(orderItems);
 
         orderItemRepository.saveAll(orderItems);
 
+        // Set total amount and save order
+        Money totalAmount = calculateTotalAmount(orderItems);
         order.setTotalAmount(totalAmount);
-        orderRepository.save(order);
-        return order;
+        orderRepository.save(finalOrder);
+
+        return finalOrder;
     }
+
 
     private List<OrderItem> createOrderItems(OrderRequestDTO orderRequestDTO, Map<Long, Money> menuItemPrices, Order order) {
-        List<OrderItem> orderItems = new ArrayList<>();
-        for (MenuItemDTO item : orderRequestDTO.getOrderItems()) {
-            Money itemPrice = menuItemPrices.get(item.getId());
-            if (itemPrice == null) {
-                throw new IllegalArgumentException("Menu item price not found for item ID: " + item.getId());
-            }
-
-            OrderItem orderItem = new OrderItem(item, order);
-            orderItem.setPrice(itemPrice);
-            orderItems.add(orderItem);
-        }
-        return orderItems;
+        return orderRequestDTO.getOrderItems().stream()
+                .map(item -> {
+                    Money itemPrice = menuItemPrices.get(item.getId());
+                    if (itemPrice == null) {
+                        throw new IllegalArgumentException("Menu item price not found for item ID: " + item.getId());
+                    }
+                    return new OrderItem(item, order, itemPrice);
+                })
+                .collect(Collectors.toList());
     }
+
 
     private Money calculateTotalAmount(List<OrderItem> orderItems) {
         Money totalAmount = new Money(0.0, Currency.getInstance("INR")); // Assuming INR as default

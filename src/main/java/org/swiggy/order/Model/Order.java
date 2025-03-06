@@ -26,8 +26,10 @@ public class Order {
     @Embedded
     private Money totalAmount;
 
+
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
 
     public Order() {
     }

@@ -1,6 +1,8 @@
 package org.swiggy.order.Model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.swiggy.order.DTO.MenuItemDTO;
 
 @Entity
@@ -11,40 +13,31 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Getter
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
+    @Getter
     @Embedded
     private Money price;
 
+    @Getter
     private int quantity;
 
+    @Setter
+    @Getter
+    private String name;
+
     public OrderItem() {
+
     }
 
-    public OrderItem(MenuItemDTO menuItemDTO, Order order) {
+    public OrderItem(MenuItemDTO menuItemDTO, Order order, Money price) {
         this.order = order;
         this.quantity = menuItemDTO.getQuantity();
-    }
-
-    public Money getPrice() {
-        return price;
-    }
-
-    public void setPrice(Money price) {
         this.price = price;
     }
 
-    public Order getOrder() {
-        return order;
-    }
 
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
 }

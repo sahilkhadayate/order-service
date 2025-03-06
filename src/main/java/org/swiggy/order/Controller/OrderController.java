@@ -23,7 +23,7 @@ public class OrderController {
         System.out.println("Creating order");
         System.out.println("====================================================");
 
-        orderService.createOrder(orderRequestDTO);
+        orderService.createOrder(orderRequestDTO, Long.parseLong(userId));
         return ResponseEntity.ok().body("Order created successfully");
     }
 
