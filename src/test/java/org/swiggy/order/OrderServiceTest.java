@@ -20,6 +20,7 @@ import org.swiggy.order.Repository.OrderItemRepository;
 import org.swiggy.order.Repository.OrderRepository;
 import org.swiggy.order.Service.External.CatalogServiceClient;
 import org.swiggy.order.Service.External.FulfillmentServiceClient;
+import org.swiggy.order.Service.Factory.OrderFactory;
 import org.swiggy.order.Service.OrderService;
 import org.swiggy.order.Service.UserService.UserService;
 
@@ -52,6 +53,9 @@ public class OrderServiceTest {
 
     @Mock
     private CatalogServiceClient catalogServiceClient;
+    @Mock
+    private OrderFactory orderFactory;
+
     @Mock
     private FulfillmentServiceClient fulfillmentServiceClient;
 
@@ -149,17 +153,14 @@ public class OrderServiceTest {
         Long restaurantId = 1L;
         Long orderId = 1L;
         Order order = new Order();
-
         order.setId(orderId);
         order.setRestaurantId(restaurantId);
-        when(orderRepository.findByIdAndRestaurantId(orderId, restaurantId)).thenReturn(order);
-
+        order.fulfillOrder();
+        when(orderFactory.changeOrderStatus(restaurantId, orderId)).thenReturn(order);
         // Act
-        orderService.updateOrderStatus(restaurantId, orderId);
-
+        Order finalorder = orderService.updateOrderStatus(restaurantId, orderId);
         // Assert
-        assertEquals(OrderStatus.DELIVERED, order.getStatus());
-        verify(orderRepository, times(1)).save(order);
+        assertEquals(OrderStatus.DELIVERED, finalorder.getStatus());
     }
 
 

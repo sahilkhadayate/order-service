@@ -46,5 +46,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleResourceDoesNotExistsException(ResourceDoesNotExistException ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+    @ExceptionHandler(OrderAlreadyDeliveredException.class)
+    public ResponseEntity<String> handleOrderAlreadyDeliveredException(OrderAlreadyDeliveredException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
 
 }

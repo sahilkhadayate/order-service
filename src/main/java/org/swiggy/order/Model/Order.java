@@ -54,12 +54,11 @@ public class Order {
         return status;
     }
 
-    public void setStatus(OrderStatus status) {
-        this.status = status;
-    }
-
-
     public void setId(Long orderId) {
         this.id = orderId;
+    }
+
+    public void fulfillOrder() {
+        this.status = OrderStatus.DELIVERED;
     }
 }
