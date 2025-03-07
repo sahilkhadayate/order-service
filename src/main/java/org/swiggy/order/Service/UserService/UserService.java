@@ -46,4 +46,8 @@ public class UserService {
             return user;
 
     }
+
+    public User getUser(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new ResourceAlreadyExistsException("User not found"));
+    }
 }

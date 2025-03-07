@@ -19,6 +19,7 @@ import org.swiggy.order.Model.OrderItem;
 import org.swiggy.order.Repository.OrderItemRepository;
 import org.swiggy.order.Repository.OrderRepository;
 import org.swiggy.order.Service.External.CatalogServiceClient;
+import org.swiggy.order.Service.External.FulfillmentServiceClient;
 import org.swiggy.order.Service.OrderService;
 import org.swiggy.order.Service.UserService.UserService;
 
@@ -27,7 +28,8 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -50,6 +52,8 @@ public class OrderServiceTest {
 
     @Mock
     private CatalogServiceClient catalogServiceClient;
+    @Mock
+    private FulfillmentServiceClient fulfillmentServiceClient;
 
 
     private OrderRequestDTO orderRequestDTO;
@@ -68,7 +72,7 @@ public class OrderServiceTest {
 
         when(userService.authenticateUser("nonExistentUser", 1L)).thenThrow(new AccessDeniedException("access denied"));
 
-        assertThrows(AccessDeniedException.class, () -> orderService.createOrder(orderRequestDTO,1L));
+        assertThrows(AccessDeniedException.class, () -> orderService.createOrder(orderRequestDTO, 1L));
 
     }
 
@@ -79,24 +83,22 @@ public class OrderServiceTest {
         Long restaurantId = 3L;
         OrderRequestDTO orderRequestDTO = new OrderRequestDTO(restaurantId, List.of());
 
-        when(catalogServiceClient.getMenuItemPrices(restaurantId)).thenReturn(Collections.emptyMap());
+        when(catalogServiceClient.fetchPricesForMenuItems(restaurantId)).thenReturn(Collections.emptyMap());
 
         // Act & Assert
-        assertThrows(ResourceDoesNotExistException.class,
-                () -> orderService.createOrder(orderRequestDTO, 1L));
+        assertThrows(ResourceDoesNotExistException.class, () -> orderService.createOrder(orderRequestDTO, 1L));
     }
 
 
     @Test
     void test_CreateOrder_ShouldThrowException_WhenMenuItemsNotFound() {
         // Arrange
-        OrderRequestDTO requestDTO = new OrderRequestDTO(1L, List.of(new MenuItemDTO(101L, 2,"name3")));
+        OrderRequestDTO requestDTO = new OrderRequestDTO(1L, List.of(new MenuItemDTO(101L, 2, "name3")));
 
-        when(catalogServiceClient.getMenuItemPrices(1L)).thenReturn(Map.of());
+        when(catalogServiceClient.fetchPricesForMenuItems(1L)).thenReturn(Map.of());
 
         // Act & Assert
-        ResourceDoesNotExistException exception = assertThrows(ResourceDoesNotExistException.class,
-                () -> orderService.createOrder(requestDTO,1L));
+        ResourceDoesNotExistException exception = assertThrows(ResourceDoesNotExistException.class, () -> orderService.createOrder(requestDTO, 1L));
 
         assertEquals("No menu items found for restaurant", exception.getMessage());
 
@@ -107,20 +109,14 @@ public class OrderServiceTest {
     @Test
     void test_createOrder_ShouldSaveOrderAndOrderItems_WhenMenuItemsExist() throws ResourceDoesNotExistException {
         // Arrange
-        OrderRequestDTO requestDTO = new OrderRequestDTO(1L, List.of(
-                new MenuItemDTO(101L, 2,"name1"),
-                new MenuItemDTO(102L, 1,"name2")
-        ));
+        OrderRequestDTO requestDTO = new OrderRequestDTO(1L, List.of(new MenuItemDTO(101L, 2, "name1"), new MenuItemDTO(102L, 1, "name2")));
 
-        Map<Long, Money> menuItemPrices = Map.of(
-                101L, new Money(10.0, Currency.getInstance("INR")),
-                102L, new Money(5.0, Currency.getInstance("INR"))
-        );
+        Map<Long, Money> menuItemPrices = Map.of(101L, new Money(10.0, Currency.getInstance("INR")), 102L, new Money(5.0, Currency.getInstance("INR")));
 
-        when(catalogServiceClient.getMenuItemPrices(1L)).thenReturn(menuItemPrices);
+        when(catalogServiceClient.fetchPricesForMenuItems(1L)).thenReturn(menuItemPrices);
         when(orderRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         // Act
-        Order order = orderService.createOrder(requestDTO,1L);
+        Order order = orderService.createOrder(requestDTO, 1L);
 
         // Assert: Capture order and order items
         verify(orderRepository, times(2)).save(order);
@@ -139,12 +135,11 @@ public class OrderServiceTest {
     }
 
 
-
     @Test
     public void test_UpdateOrderStatusThrowsExceptionWhenTheRestaurantIdDoesNotExist() {
 
         when(orderRepository.findByIdAndRestaurantId(1L, 1L)).thenReturn(null);
-        assertThrows(ResourceDoesNotExistException.class,()->orderService.updateOrderStatus(1L, 1L));
+        assertThrows(ResourceDoesNotExistException.class, () -> orderService.updateOrderStatus(1L, 1L));
         verify(orderRepository, times(1)).findByIdAndRestaurantId(1L, 1L);
     }
 
@@ -153,9 +148,10 @@ public class OrderServiceTest {
         // Arrange
         Long restaurantId = 1L;
         Long orderId = 1L;
-        Order order = new Order(restaurantId);
-        order.setId(orderId);
+        Order order = new Order();
 
+        order.setId(orderId);
+        order.setRestaurantId(restaurantId);
         when(orderRepository.findByIdAndRestaurantId(orderId, restaurantId)).thenReturn(order);
 
         // Act
@@ -165,6 +161,7 @@ public class OrderServiceTest {
         assertEquals(OrderStatus.DELIVERED, order.getStatus());
         verify(orderRepository, times(1)).save(order);
     }
+
 
 }
 

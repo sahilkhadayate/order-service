@@ -1,10 +1,12 @@
 package org.swiggy.order.Service.External;
 
+import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
 import org.springframework.web.client.RestClient;
+import org.swiggy.order.DTO.RestaurantDTO;
 import org.swiggy.order.Model.Money;
 
 import java.util.Map;
@@ -18,7 +20,7 @@ public class CatalogServiceClient {
         this.restClient = restClientBuilder.baseUrl(catalogServiceUrl).build();
     }
 
-    public Map<Long, Money> getMenuItemPrices(Long restaurantId) {
+    public Map<Long, Money> fetchPricesForMenuItems(Long restaurantId) {
 
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/internal/restaurants/{restaurantId}/menu-items")
@@ -28,6 +30,14 @@ public class CatalogServiceClient {
     }
 
 
+    public RestaurantDTO fetchRestaurantInfo(@Positive(message = "Restaurant id is required") Long restaurantId) {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/internal/restaurants/{restaurantId}")
+                        .build(restaurantId))
+                .retrieve()
+                .body(RestaurantDTO.class);
+
+    }
 }
 
 

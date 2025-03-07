@@ -17,6 +17,7 @@ public class Order {
     private Long id;
 
     @Getter
+    @Setter
     @NotNull
     @Positive(message = "Restaurant id is required")
     private Long restaurantId;
@@ -26,17 +27,26 @@ public class Order {
     @Embedded
     private Money totalAmount;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
+    public User getUser() {
+        return user;
+    }
 
 
     public Order() {
     }
 
-    public Order(@Positive(message = "Restaurant id is required") Long restaurantId) {
+    public Order(@Positive(message = "Restaurant id is required") Long restaurantId, User user) {
         this.restaurantId = restaurantId;
         totalAmount = new Money();
+        this.user = user;
         this.status = OrderStatus.ACCEPTED;
     }
 
@@ -50,6 +60,6 @@ public class Order {
 
 
     public void setId(Long orderId) {
-    this.id = orderId;
+        this.id = orderId;
     }
 }

@@ -39,5 +39,15 @@ public class OrderItem {
         this.price = price;
     }
 
+    public OrderItem(long l, String name1, int i, Money inr, Order order) {
+    }
 
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

@@ -1,10 +1,12 @@
 package org.swiggy.order.Service.External;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.swiggy.order.DTO.AssignDERequestDTO;
 import org.swiggy.order.DTO.AssignDEResponseDTO;
 
+@Service
 public class FulfillmentServiceClient {
 
 
