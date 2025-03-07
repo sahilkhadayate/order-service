@@ -11,7 +11,6 @@ import java.util.List;
 @Data
 public class OrderRequestDTO {
 
-
     @Positive(message = "Restaurant id is required")
     private Long restaurantId;
 

@@ -1,5 +1,7 @@
 package org.swiggy.order.Service;
 
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.swiggy.order.DTO.AssignDERequestDTO;
 import org.swiggy.order.DTO.MenuItemDTO;
@@ -21,19 +23,21 @@ public class FulfillmentService {
         this.catalogServiceClient = catalogServiceClient;
     }
 
+    @Retryable(
+            retryFor = {Exception.class},
+            backoff = @Backoff(delay = 2000)
+    )
+
+
     public void assignDeliveryExecutive(Order order, List<MenuItemDTO> orderItems) {
         RestaurantDTO restaurantDTO = catalogServiceClient.fetchRestaurantInfo(order.getRestaurantId());
+
         AssignDERequestDTO assignDERequestDTO = new AssignDERequestDTO(order, restaurantDTO, orderItems);
 
-        try {
-            fulfillmentServiceClient.assignDeliveryExecutive(assignDERequestDTO);
-        } catch (Exception e) {
-            System.err.println("Failed to assign Delivery Executive: " + e.getMessage());
-            // TODO: Implement retry mechanism if necessary
-        }
+        fulfillmentServiceClient.assignDeliveryExecutive(assignDERequestDTO);
+        order.acceptOrder();
+
     }
-
-
 
 
 }

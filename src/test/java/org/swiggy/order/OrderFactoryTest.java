@@ -41,37 +41,35 @@ public class OrderFactoryTest {
         }
     @Test
     public void test_OrderFactoryCallsRepositoryToFetchOrderWhenUpdatingStatus() throws ResourceDoesNotExistException {
-        //Arrange
+
         Order order = new Order();
         when(orderRepository.findByIdAndRestaurantId(1L,12L)).thenReturn(order);
-        //Act
+
         orderFactory.changeOrderStatus(12L, 1L);
-        //Assert
+        
         verify(orderRepository).findByIdAndRestaurantId(1L,12L);
     }
 
     @Test
     public void test_OrderFactoryChangesStatusOfOrder() throws ResourceDoesNotExistException {
-        //Arrange
+
         Order order = new Order();
         when(orderRepository.findByIdAndRestaurantId(1L,12L)).thenReturn(order);
-        //Act
+
         orderFactory.changeOrderStatus(12L, 1L);
-        //Assert
+
         verify(orderRepository).save(order);
         assertEquals(OrderStatus.DELIVERED, order.getStatus());
     }
 
     @Test
-    public void test_OrderFactoryUnableToChangeStatusOfOrderWhenAlreadyDelivered() throws ResourceDoesNotExistException {
-        //Arrange
+    public void test_OrderFactoryUnableToChangeStatusOfOrderWhenAlreadyDelivered()  {
+
         Order order = new Order();
         when(orderRepository.findByIdAndRestaurantId(1L,12L)).thenReturn(order);
-        //Act
         order.fulfillOrder();
 
         assertThrows(OrderAlreadyDeliveredException.class,()->orderFactory.changeOrderStatus(12L, 1L));
-        //Assert
     }
 
 }

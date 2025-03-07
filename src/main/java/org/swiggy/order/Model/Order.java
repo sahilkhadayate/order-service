@@ -47,7 +47,7 @@ public class Order {
         this.restaurantId = restaurantId;
         totalAmount = new Money();
         this.user = user;
-        this.status = OrderStatus.ACCEPTED;
+        this.status = OrderStatus.PROCESSING;
     }
 
     public OrderStatus getStatus() {
@@ -56,6 +56,11 @@ public class Order {
 
     public void setId(Long orderId) {
         this.id = orderId;
+    }
+
+
+    public void acceptOrder(){
+        this.status = OrderStatus.ACCEPTED;
     }
 
     public void fulfillOrder() {

@@ -38,9 +38,14 @@ public class OrderItem {
         this.quantity = menuItemDTO.getQuantity();
         this.price = price;
     }
-
-    public OrderItem(long l, String name1, int i, Money inr, Order order) {
-    }
+//
+//    public OrderItem(long id, String name, int quantity, Money price, Order order) {
+//        this.id = id;
+//        this.name = name;
+//        this.quantity = quantity;
+//        this.price = price;
+//        this.order = order;
+//    }
 
 
     public Long getId() {
