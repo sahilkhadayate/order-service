@@ -4,18 +4,18 @@ package org.swiggy.order.DTO;
 import lombok.Data;
 
 @Data
-public class RestaurantDTO {
+public class RestaurantRequest {
     private Long restaurantId;
     private String name;
     private String location;
 
-    public RestaurantDTO(Long restaurantId, String restaurantName, String location) {
+    public RestaurantRequest(Long restaurantId, String restaurantName, String location) {
         this.restaurantId = restaurantId;
         this.name = restaurantName;
         this.location = location;
     }
 
-    public RestaurantDTO() {
+    public RestaurantRequest() {
     }
     // Getters and Setters
 }

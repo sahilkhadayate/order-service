@@ -3,7 +3,9 @@ package org.swiggy.order.Controller;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.swiggy.order.DTO.OrderRequestDTO;
+import org.swiggy.order.DTO.AssignDEResponse;
+import org.swiggy.order.DTO.CreateOrderResponse;
+import org.swiggy.order.DTO.OrderRequest;
 import org.swiggy.order.Exception.ResourceDoesNotExistException;
 import org.swiggy.order.Service.OrderService;
 
@@ -18,13 +20,14 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequestDTO orderRequestDTO, @PathVariable String userId) throws ResourceDoesNotExistException {
+    public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequest orderRequest, @PathVariable String userId) throws ResourceDoesNotExistException {
         System.out.println("====================================================");
         System.out.println("Creating order");
         System.out.println("====================================================");
 
-        orderService.createOrder(orderRequestDTO, Long.parseLong(userId));
-        return ResponseEntity.ok().body("Order created successfully");
+        AssignDEResponse assignDEResponse = orderService.createOrder(orderRequest, Long.parseLong(userId));
+        CreateOrderResponse createOrderResponse = new CreateOrderResponse(assignDEResponse);
+        return ResponseEntity.ok().body(createOrderResponse);
     }
 
 

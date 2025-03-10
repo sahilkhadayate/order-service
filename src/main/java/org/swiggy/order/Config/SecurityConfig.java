@@ -3,6 +3,9 @@ package org.swiggy.order.Config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,24 +19,25 @@ import org.swiggy.order.Service.UserService.CustomUserDetailService;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+@EnableMethodSecurity
 @Configuration
 public class SecurityConfig {
 
-
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
+        http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/users").permitAll() // Public access for user registration
-                        .requestMatchers(HttpMethod.POST, "/users/*/orders").authenticated() // Basic Auth for creating orders
-                        .requestMatchers(HttpMethod.PUT, "/restaurants/*/orders/*/status").authenticated() // API Key validation handled in filter
+                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users/*/orders").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/restaurants/*/orders/*/status").authenticated()
                         .anyRequest().authenticated()
                 )
-                .httpBasic(withDefaults()) // Enable Basic Auth
-                .addFilterBefore(new ApiKeyFilter(), UsernamePasswordAuthenticationFilter.class) // Custom API key filter
-                .build();
+                .formLogin(withDefaults())
+                .httpBasic(withDefaults());
+
+                http.addFilterBefore(new ApiKeyFilter(), UsernamePasswordAuthenticationFilter.class);
+               return http.build();
     }
 
     @Bean
@@ -46,5 +50,9 @@ public class SecurityConfig {
         return new CustomUserDetailService(userRepository);
     }
 
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
 
 }

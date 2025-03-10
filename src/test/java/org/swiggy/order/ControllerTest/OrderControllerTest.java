@@ -1,4 +1,4 @@
-package org.swiggy.order;
+package org.swiggy.order.ControllerTest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -6,17 +6,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.swiggy.order.Config.SecurityConfig;
-import org.swiggy.order.DTO.MenuItemDTO;
-import org.swiggy.order.DTO.OrderRequestDTO;
+import org.swiggy.order.DTO.MenuItem;
+import org.swiggy.order.DTO.OrderRequest;
 import org.swiggy.order.Repository.UserRepository;
 import org.swiggy.order.Service.UserService.UserService;
 
@@ -37,7 +35,7 @@ public class OrderControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private OrderRequestDTO orderRequestDTO;
+    private OrderRequest orderRequest;
 
     @MockitoBean
     private AuthenticationManager authenticationManager;
@@ -52,8 +50,8 @@ public class OrderControllerTest {
 
     @BeforeEach
     void setUp() {
-        List<MenuItemDTO> items = new ArrayList<>();
-        orderRequestDTO = new OrderRequestDTO(1L, items);
+        List<MenuItem> items = new ArrayList<>();
+        orderRequest = new OrderRequest(1L, items);
     }
 
     @Test
@@ -62,50 +60,50 @@ public class OrderControllerTest {
         mockMvc.perform(post("/users/1/orders")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(orderRequestDTO))).andExpect(status().isBadRequest())
+                .content(objectMapper.writeValueAsString(orderRequest))).andExpect(status().isBadRequest())
                 .andExpect(result -> assertEquals("{\"orderItems\":\"Order must contain at least one item\"}", result.getResponse().getContentAsString()));
     }
 
     @Test
     void testOrderCreationThrowsBadRequestForInvalidRestaurantId() throws Exception {
-        List<MenuItemDTO> items = new ArrayList<>();
-        items.add( new MenuItemDTO(1L,3,"name"));
+        List<MenuItem> items = new ArrayList<>();
+        items.add( new MenuItem(1L,3,"name"));
 
-        orderRequestDTO = new OrderRequestDTO(-3L, items);
+        orderRequest = new OrderRequest(-3L, items);
 
         mockMvc.perform(post("/users/1/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(orderRequestDTO))).andExpect(status().isBadRequest())
+                        .content(objectMapper.writeValueAsString(orderRequest))).andExpect(status().isBadRequest())
                 .andExpect(result -> assertEquals("{\"restaurantId\":\"Restaurant id is required\"}", result.getResponse().getContentAsString()));
     }
 
     @Test
     void testOrderCreationSuccessWhenOrderIsCreatedSuccessfully() throws Exception {
-        List<MenuItemDTO> items = new ArrayList<>();
-        items.add( new MenuItemDTO(1L,3,"name"));
+        List<MenuItem> items = new ArrayList<>();
+        items.add( new MenuItem(1L,3,"name"));
 
-        orderRequestDTO = new OrderRequestDTO(3L, items);
+        orderRequest = new OrderRequest(3L, items);
 
         mockMvc.perform(post("/users/1/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(orderRequestDTO))).andExpect(status().isOk());
+                        .content(objectMapper.writeValueAsString(orderRequest))).andExpect(status().isOk());
     }
 
     @Test
     void testOrderCreationThrowsForbiddenWhenUserIsNotLoggedIn() throws Exception {
         when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Invalid Credentials"));
 
-        List<MenuItemDTO> items = new ArrayList<>();
-        items.add( new MenuItemDTO(1L,3,"name"));
+        List<MenuItem> items = new ArrayList<>();
+        items.add( new MenuItem(1L,3,"name"));
 
-        orderRequestDTO = new OrderRequestDTO(3L, items);
+        orderRequest = new OrderRequest(3L, items);
 
         mockMvc.perform(post("/users/1/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(orderRequestDTO))).andExpect(status().isForbidden());
+                        .content(objectMapper.writeValueAsString(orderRequest))).andExpect(status().isForbidden());
     }
 
 

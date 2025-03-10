@@ -1,4 +1,4 @@
-package org.swiggy.order;
+package org.swiggy.order.ControllerTest;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -6,7 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.swiggy.order.DTO.UserRequestDTO;
+import org.swiggy.order.DTO.UserRequest;
 import org.swiggy.order.Model.User;
 import org.swiggy.order.Service.UserService.UserService;
 
@@ -53,7 +53,7 @@ public class UserControllerTest {
     @Test
     public void testRegisterUserWithUserNameAndPassword() throws Exception {
 
-        UserRequestDTO userRequest = mock(UserRequestDTO.class);
+        UserRequest userRequest = mock(UserRequest.class);
         when(userService.createUser(userRequest))
                 .thenReturn(new User("user1", "pass1"));
         mockMvc.perform(post(REGISTER_USER)

@@ -1,4 +1,4 @@
-package org.swiggy.order;
+package org.swiggy.order.ServiceTest;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -7,7 +7,7 @@ import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
-import org.swiggy.order.DTO.RestaurantDTO;
+import org.swiggy.order.DTO.RestaurantRequest;
 import org.swiggy.order.Model.Money;
 import org.swiggy.order.Service.External.CatalogServiceClient;
 
@@ -67,12 +67,12 @@ public class CatalogServiceClientTest {
     @Test
     public void testFetchRestaurantInfo() {
         Long restaurantId = 1L;
-        RestaurantDTO expectedResponse = new RestaurantDTO(1L, "rest2", "city2");
+        RestaurantRequest expectedResponse = new RestaurantRequest(1L, "rest2", "city2");
 
 //        mockServer.expect(requestTo(catalogServiceUrl + "/internal/restaurants/" + restaurantId))
 //                .andRespond(withSuccess("{\"restaurantId\":1,\"name\":\"Restaurant Name\",\"location\":\"Location\"}", MediaType.APPLICATION_JSON));
 
-        RestaurantDTO response = catalogServiceClient.fetchRestaurantInfo(restaurantId);
+        RestaurantRequest response = catalogServiceClient.fetchRestaurantInfo(restaurantId);
 
         assertEquals(expectedResponse, response);
     }

@@ -3,7 +3,7 @@ package org.swiggy.order.Model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.swiggy.order.DTO.MenuItemDTO;
+import org.swiggy.order.DTO.MenuItem;
 
 @Entity
 @Table(name = "order_items")
@@ -33,10 +33,11 @@ public class OrderItem {
 
     }
 
-    public OrderItem(MenuItemDTO menuItemDTO, Order order, Money price) {
+    public OrderItem(MenuItem menuItem, Order order, Money price) {
         this.order = order;
-        this.quantity = menuItemDTO.getQuantity();
+        this.quantity = menuItem.getQuantity();
         this.price = price;
+        this.name = menuItem.getName();
     }
 //
 //    public OrderItem(long id, String name, int quantity, Money price, Order order) {

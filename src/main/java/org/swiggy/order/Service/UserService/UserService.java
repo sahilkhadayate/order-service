@@ -7,7 +7,7 @@ import org.swiggy.order.Repository.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.swiggy.order.DTO.UserRequestDTO;
+import org.swiggy.order.DTO.UserRequest;
 import org.swiggy.order.Exception.ResourceAlreadyExistsException;
 import org.swiggy.order.Model.User;
 
@@ -24,7 +24,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User createUser(UserRequestDTO userRequest) {
+    public User createUser(UserRequest userRequest) {
         try {
             String encodedPassword = passwordEncoder.encode(userRequest.getPassword());
             User user = new User(userRequest.getUsername(), encodedPassword);

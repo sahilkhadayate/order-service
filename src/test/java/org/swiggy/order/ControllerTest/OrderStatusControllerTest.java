@@ -1,4 +1,4 @@
-package org.swiggy.order;
+package org.swiggy.order.ControllerTest;
 
 
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,6 @@ import org.swiggy.order.Service.UserService.UserService;
 
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest

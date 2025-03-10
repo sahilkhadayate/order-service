@@ -3,9 +3,10 @@ package org.swiggy.order.Service;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.swiggy.order.DTO.AssignDERequestDTO;
-import org.swiggy.order.DTO.MenuItemDTO;
-import org.swiggy.order.DTO.RestaurantDTO;
+import org.swiggy.order.DTO.AssignDERequest;
+import org.swiggy.order.DTO.AssignDEResponse;
+import org.swiggy.order.DTO.MenuItem;
+import org.swiggy.order.DTO.RestaurantRequest;
 import org.swiggy.order.Model.Order;
 import org.swiggy.order.Service.External.CatalogServiceClient;
 import org.swiggy.order.Service.External.FulfillmentServiceClient;
@@ -29,13 +30,10 @@ public class FulfillmentService {
     )
 
 
-    public void assignDeliveryExecutive(Order order, List<MenuItemDTO> orderItems) {
-        RestaurantDTO restaurantDTO = catalogServiceClient.fetchRestaurantInfo(order.getRestaurantId());
-
-        AssignDERequestDTO assignDERequestDTO = new AssignDERequestDTO(order, restaurantDTO, orderItems);
-
-        fulfillmentServiceClient.assignDeliveryExecutive(assignDERequestDTO);
-        order.acceptOrder();
+    public AssignDEResponse assignDeliveryExecutive(Order order, List<MenuItem> orderItems) {
+        RestaurantRequest restaurantRequest = catalogServiceClient.fetchRestaurantInfo(order.getRestaurantId());
+        AssignDERequest assignDERequest = new AssignDERequest(order, restaurantRequest, orderItems);
+        return fulfillmentServiceClient.assignDeliveryExecutive(assignDERequest);
 
     }
 

@@ -21,6 +21,11 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
                   name: amount
                   type: DECIMAL(19,4)
                   constraints:

@@ -1,11 +1,12 @@
-package org.swiggy.order;
+package org.swiggy.order.ServiceTest;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
-import org.swiggy.order.DTO.AssignDERequestDTO;
-import org.swiggy.order.DTO.MenuItemDTO;
-import org.swiggy.order.DTO.RestaurantDTO;
+import org.swiggy.order.DTO.AssignDERequest;
+import org.swiggy.order.DTO.MenuItem;
+import org.swiggy.order.DTO.MoneyRequest;
+import org.swiggy.order.DTO.RestaurantRequest;
 import org.swiggy.order.Model.Money;
 import org.swiggy.order.Service.External.FulfillmentServiceClient;
 
@@ -50,13 +51,13 @@ public class FulfillmentServiceClientTest {
 
     @Test
     public void testAssignDeliveryExecutive_ActualCallToService() {
-        AssignDERequestDTO requestDTO = new AssignDERequestDTO();
+        AssignDERequest requestDTO = new AssignDERequest();
         Money money = new Money(100.0, Currency.getInstance("INR"));
         requestDTO.setOrderId(2L);
         requestDTO.setCustomerId(1L);
-        requestDTO.setRestaurant(new RestaurantDTO(1L, "Restaurant Name", "loc1"));
-        requestDTO.setItems(Arrays.asList(new MenuItemDTO(2L,2,"Item1"), new MenuItemDTO(1L,3,"Item2" )));
-        requestDTO.setTotal(money);
+        requestDTO.setRestaurant(new RestaurantRequest(1L, "Restaurant Name", "loc1"));
+        requestDTO.setItems(Arrays.asList(new MenuItem(2L,2,"Item1"), new MenuItem(1L,3,"Item2" )));
+        requestDTO.setTotal(new MoneyRequest(money));
 
         fulfillmentServiceClient.assignDeliveryExecutive(requestDTO);
     }

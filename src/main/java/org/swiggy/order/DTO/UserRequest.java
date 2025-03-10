@@ -3,7 +3,7 @@ package org.swiggy.order.DTO;
 import lombok.Data;
 
 @Data
-public class UserRequestDTO {
+public class UserRequest {
 
     private String password;
     private String username;

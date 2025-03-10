@@ -6,7 +6,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
 import org.springframework.web.client.RestClient;
-import org.swiggy.order.DTO.RestaurantDTO;
+import org.swiggy.order.DTO.RestaurantRequest;
 import org.swiggy.order.Model.Money;
 
 import java.util.Map;
@@ -30,12 +30,12 @@ public class CatalogServiceClient {
     }
 
 
-    public RestaurantDTO fetchRestaurantInfo(@Positive(message = "Restaurant id is required") Long restaurantId) {
+    public RestaurantRequest fetchRestaurantInfo(@Positive(message = "Restaurant id is required") Long restaurantId) {
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/internal/restaurants/{restaurantId}")
                         .build(restaurantId))
                 .retrieve()
-                .body(RestaurantDTO.class);
+                .body(RestaurantRequest.class);
 
     }
 }
