@@ -1,23 +1,21 @@
 package org.swiggy.order.ServiceTest;
 
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.access.AccessDeniedException;
 import org.swiggy.order.DTO.AssignDEResponse;
 import org.swiggy.order.DTO.MenuItem;
 import org.swiggy.order.DTO.OrderRequest;
 import org.swiggy.order.Enum.OrderStatus;
-import org.swiggy.order.Exception.InvalidUserException;
 import org.swiggy.order.Exception.OrderAlreadyDeliveredException;
 import org.swiggy.order.Exception.ResourceDoesNotExistException;
 import org.swiggy.order.Model.Money;
 import org.swiggy.order.Model.Order;
 import org.swiggy.order.Model.OrderItem;
+import org.swiggy.order.Model.User;
 import org.swiggy.order.Repository.OrderItemRepository;
 import org.swiggy.order.Repository.OrderRepository;
 import org.swiggy.order.Service.External.CatalogServiceClient;
@@ -26,19 +24,15 @@ import org.swiggy.order.Service.FulfillmentService;
 import org.swiggy.order.Service.OrderService;
 import org.swiggy.order.Service.UserService.UserService;
 
-import java.util.Collections;
-import java.util.Currency;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-
 
 @ExtendWith(MockitoExtension.class)
 public class OrderServiceTest {
-
 
     @Mock
     private UserService userService;
@@ -49,154 +43,187 @@ public class OrderServiceTest {
     @Mock
     private OrderItemRepository orderItemRepository;
 
-    @InjectMocks
-    private OrderService orderService;
-
     @Mock
     private CatalogServiceClient catalogServiceClient;
+
     @Mock
     private OrderFactory orderFactory;
 
     @Mock
-    private FulfillmentService funfillmentService;
+    private FulfillmentService fulfillmentService;
 
-
-    private OrderRequest orderRequest;
-
-    @Test
-    public void testCreateOrderThrowsInvalidUserException() {
-            orderService = new OrderService(userService, orderFactory,catalogServiceClient,funfillmentService,orderRepository, orderItemRepository);
-        when(userService.authenticateUser("nonExistentUser", 1L)).thenThrow(new InvalidUserException("Invalid User"));
-
-        assertThrows(InvalidUserException.class, () -> orderService.createOrder(orderRequest, 1L));
-
-    }
+    @InjectMocks
+    private OrderService orderService;
 
     @Test
-    public void test_CreateOrderThrowsAccessDeniedException() {
-
-        when(userService.authenticateUser("nonExistentUser", 1L)).thenThrow(new AccessDeniedException("access denied"));
-
-        assertThrows(AccessDeniedException.class, () -> orderService.createOrder(orderRequest, 1L));
-
-    }
-
-
-    @Test
-    void test_shouldThrowExceptionIfMenuItemsNotFound() {
+    void testCreateOrder_ShouldThrowException_WhenMenuItemsNotFound() {
         // Arrange
+        Long userId = 1L;
         Long restaurantId = 3L;
-        OrderRequest orderRequest = new OrderRequest(restaurantId, List.of());
+        OrderRequest orderRequest = new OrderRequest(restaurantId, List.of(new MenuItem(101L, 2, "name3")));
+        User user = new User();
 
+        when(userService.getUser(userId)).thenReturn(user);
         when(catalogServiceClient.fetchPricesForMenuItems(restaurantId)).thenReturn(Collections.emptyMap());
 
         // Act & Assert
-        assertThrows(ResourceDoesNotExistException.class, () -> orderService.createOrder(orderRequest, 1L));
-    }
-
-
-    @Test
-    void test_CreateOrder_ShouldThrowException_WhenMenuItemsNotFound() {
-        // Arrange
-        OrderRequest requestDTO = new OrderRequest(1L, List.of(new MenuItem(101L, 2, "name3")));
-
-        when(catalogServiceClient.fetchPricesForMenuItems(1L)).thenReturn(Map.of());
-
-        // Act & Assert
-        ResourceDoesNotExistException exception = assertThrows(ResourceDoesNotExistException.class, () -> orderService.createOrder(requestDTO, 1L));
+        ResourceDoesNotExistException exception = assertThrows(ResourceDoesNotExistException.class,
+                () -> orderService.createOrder(orderRequest, userId));
 
         assertEquals("No menu items found for restaurant", exception.getMessage());
 
+        // Verify no further interactions occurred
+        verify(orderFactory, never()).createOrder(any(), any(), any(), any());
         verify(orderRepository, never()).save(any());
-        verify(orderItemRepository, never()).save(any());
+        verify(orderItemRepository, never()).saveAll(any());
     }
 
     @Test
-    void test_createOrder_ShouldSaveOrderAndOrderItems_WhenMenuItemsExist() throws ResourceDoesNotExistException {
+    void testCreateOrder_ShouldCreateAndSaveOrder_WhenValidRequest() throws ResourceDoesNotExistException {
         // Arrange
-        OrderRequest requestDTO = new OrderRequest(1L, List.of(new MenuItem(101L, 2, "name1"), new MenuItem(102L, 1, "name2")));
+        Long userId = 1L;
+        Long restaurantId = 1L;
+        List<MenuItem> menuItems = List.of(
+                new MenuItem(101L, 2, "Burger"),
+                new MenuItem(102L, 3, "Pizza")
+        );
+        OrderRequest orderRequest = new OrderRequest(restaurantId, menuItems);
+        User user = new User();
+        Order mockOrder = new Order(restaurantId, user);
 
-        Map<Long, Money> menuItemPrices = Map.of(101L, new Money(10.0, Currency.getInstance("INR")), 102L, new Money(5.0, Currency.getInstance("INR")));
+        Map<Long, Money> menuItemPrices = Map.of(
+                101L, new Money(100, Currency.getInstance("INR")),
+                102L, new Money(200, Currency.getInstance("INR"))
+        );
 
-        when(catalogServiceClient.fetchPricesForMenuItems(1L)).thenReturn(menuItemPrices);
-        when(orderRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        // Add order items to the mock order
+        List<OrderItem> orderItems = Arrays.asList(
+                new OrderItem(menuItems.get(0), mockOrder, menuItemPrices.get(101L)),
+                new OrderItem(menuItems.get(1), mockOrder, menuItemPrices.get(102L))
+        );
+
+        AssignDEResponse expectedResponse = new AssignDEResponse();
+        expectedResponse.setDeId(123L);
+
+        // Setup mocks
+        when(userService.getUser(userId)).thenReturn(user);
+        when(catalogServiceClient.fetchPricesForMenuItems(restaurantId)).thenReturn(menuItemPrices);
+        when(orderFactory.createOrder(eq(restaurantId), eq(user), eq(menuItems), eq(menuItemPrices)))
+                .thenReturn(mockOrder);
+        when(orderRepository.save(mockOrder)).thenReturn(mockOrder);
+        when(fulfillmentService.assignDeliveryExecutive(mockOrder, menuItems)).thenReturn(expectedResponse);
+
         // Act
-        AssignDEResponse assignDEResponse = orderService.createOrder(requestDTO, 1L);
+        AssignDEResponse response = orderService.createOrder(orderRequest, userId);
 
-        // Assert: Capture order and order items
-       // verify(orderRepository, times(2)).save();
-        assertNotNull(assignDEResponse.getDeId());
+        // Assert
+        assertNotNull(response);
+        assertEquals(123L, response.getDeId());
 
-        ArgumentCaptor<List<OrderItem>> orderItemsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(orderItemRepository, times(1)).saveAll(orderItemsCaptor.capture());
-
-        List<OrderItem> savedOrderItems = orderItemsCaptor.getValue();
-
-        assertEquals(2, savedOrderItems.size());
-
-        assertEquals(new Money(10, Currency.getInstance("INR")), savedOrderItems.get(0).getPrice());
-        assertEquals(new Money(5, Currency.getInstance("INR")), savedOrderItems.get(1).getPrice());
-
-    }
-
-
-    @Test
-    public void test_UpdateOrderStatusThrowsExceptionWhenTheRestaurantIdDoesNotExist() {
-
-        when(orderRepository.findByIdAndRestaurantId(1L, 1L)).thenReturn(null);
-        assertThrows(ResourceDoesNotExistException.class, () -> orderService.updateOrderStatus(1L, 1L));
-        verify(orderRepository, times(1)).findByIdAndRestaurantId(1L, 1L);
+        // Verify interactions
+        verify(orderRepository).save(mockOrder);
+        verify(orderItemRepository).saveAll(any());
+        verify(fulfillmentService).assignDeliveryExecutive(mockOrder, menuItems);
     }
 
     @Test
-    public void testUpdateOrderStatus_ChangesOrderStatus() throws ResourceDoesNotExistException {
+    void testUpdateOrderStatus_ShouldThrowException_WhenOrderNotFound() {
         // Arrange
         Long restaurantId = 1L;
         Long orderId = 1L;
-        Order order = new Order();
-        order.setId(orderId);
-        order.setRestaurantId(restaurantId);
-        order.fulfillOrder();
+
+        when(orderRepository.findByIdAndRestaurantId(orderId, restaurantId)).thenReturn(null);
+
+        // Act & Assert
+        assertThrows(ResourceDoesNotExistException.class,
+                () -> orderService.updateOrderStatus(restaurantId, orderId));
+
+        // Verify repository was called
+        verify(orderRepository).findByIdAndRestaurantId(orderId, restaurantId);
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void testUpdateOrderStatus_ShouldThrowException_WhenOrderAlreadyDelivered() {
+        // Arrange
+        Long restaurantId = 1L;
+        Long orderId = 1L;
+        Order order = new Order(restaurantId, new User());
+        order.fulfillOrder(); // Set status to DELIVERED
+
+        when(orderRepository.findByIdAndRestaurantId(orderId, restaurantId)).thenReturn(order);
+
+        // Act & Assert
+        assertThrows(OrderAlreadyDeliveredException.class,
+                () -> orderService.updateOrderStatus(restaurantId, orderId));
+
+        // Verify repository was called
+        verify(orderRepository).findByIdAndRestaurantId(orderId, restaurantId);
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void testUpdateOrderStatus_ShouldUpdateStatus_WhenOrderExists() throws ResourceDoesNotExistException {
+        // Arrange
+        Long restaurantId = 1L;
+        Long orderId = 1L;
+        Order order = new Order(restaurantId, new User());
+
+        when(orderRepository.findByIdAndRestaurantId(orderId, restaurantId)).thenReturn(order);
+        when(orderRepository.save(order)).thenReturn(order);
+
         // Act
-        Order finalorder = orderService.updateOrderStatus(restaurantId, orderId);
+        Order result = orderService.updateOrderStatus(restaurantId, orderId);
+
         // Assert
-        assertEquals(OrderStatus.DELIVERED, finalorder.getStatus());
-    }
+        assertNotNull(result);
+        assertEquals(OrderStatus.DELIVERED, result.getStatus());
 
-    @Test
-    public void test_OrderFactoryCallsRepositoryToFetchOrderWhenUpdatingStatus() throws ResourceDoesNotExistException {
-
-        Order order = new Order();
-        when(orderRepository.findByIdAndRestaurantId(1L,12L)).thenReturn(order);
-
-        orderService.updateOrderStatus(12L, 1L);
-
-        verify(orderRepository).findByIdAndRestaurantId(1L,12L);
-    }
-
-    @Test
-    public void test_OrderFactoryChangesStatusOfOrder() throws ResourceDoesNotExistException {
-
-        Order order = new Order();
-        when(orderRepository.findByIdAndRestaurantId(1L,12L)).thenReturn(order);
-
-        orderService.updateOrderStatus(12L, 1L);
-
+        // Verify repository calls
+        verify(orderRepository).findByIdAndRestaurantId(orderId, restaurantId);
         verify(orderRepository).save(order);
-        assertEquals(OrderStatus.DELIVERED, order.getStatus());
     }
 
     @Test
-    public void test_OrderFactoryUnableToChangeStatusOfOrderWhenAlreadyDelivered()  {
+    void testCreateOrder_ShouldUseFactoryAndRepositories() throws ResourceDoesNotExistException {
+        // Arrange
+        Long userId = 1L;
+        Long restaurantId = 1L;
+        List<MenuItem> menuItems = List.of(new MenuItem(101L, 2, "Burger"));
+        OrderRequest orderRequest = new OrderRequest(restaurantId, menuItems);
+        User user = new User();
 
-        Order order = new Order();
-        when(orderRepository.findByIdAndRestaurantId(1L,12L)).thenReturn(order);
-        order.fulfillOrder();
+        Map<Long, Money> menuItemPrices = Map.of(
+                101L, new Money(100, Currency.getInstance("INR"))
+        );
 
-        assertThrows(OrderAlreadyDeliveredException.class,()->orderService.updateOrderStatus(12L, 1L));
+        Order mockOrder = new Order(restaurantId, user);
+        List<OrderItem> orderItems = Collections.singletonList(
+                new OrderItem(menuItems.get(0), mockOrder, menuItemPrices.get(101L))
+        );
+
+        // Setup mocks
+        when(userService.getUser(userId)).thenReturn(user);
+        when(catalogServiceClient.fetchPricesForMenuItems(restaurantId)).thenReturn(menuItemPrices);
+        when(orderFactory.createOrder(eq(restaurantId), eq(user), eq(menuItems), eq(menuItemPrices)))
+                .thenReturn(mockOrder);
+        when(orderRepository.save(mockOrder)).thenReturn(mockOrder);
+        when(fulfillmentService.assignDeliveryExecutive(mockOrder, menuItems))
+                .thenReturn(new AssignDEResponse());
+
+        // Act
+        orderService.createOrder(orderRequest, userId);
+
+        // Assert - using ArgumentCaptor to capture and verify parameters
+        ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+        verify(orderRepository).save(orderCaptor.capture());
+        Order capturedOrder = orderCaptor.getValue();
+
+        assertEquals(restaurantId, capturedOrder.getRestaurantId());
+        assertEquals(user, capturedOrder.getUser());
+
+        // Verify correct factory and service methods were called
+        verify(orderFactory).createOrder(restaurantId, user, menuItems, menuItemPrices);
+        verify(fulfillmentService).assignDeliveryExecutive(mockOrder, menuItems);
     }
-
-
 }
-
-

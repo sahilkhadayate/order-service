@@ -20,12 +20,9 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequest orderRequest, @PathVariable String userId) throws ResourceDoesNotExistException {
-        System.out.println("====================================================");
-        System.out.println("Creating order");
-        System.out.println("====================================================");
+    public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequest orderRequest, @PathVariable Long userId) throws ResourceDoesNotExistException {
 
-        AssignDEResponse assignDEResponse = orderService.createOrder(orderRequest, Long.parseLong(userId));
+        AssignDEResponse assignDEResponse = orderService.createOrder(orderRequest, userId);
         CreateOrderResponse createOrderResponse = new CreateOrderResponse(assignDEResponse);
         return ResponseEntity.ok().body(createOrderResponse);
     }

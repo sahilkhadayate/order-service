@@ -6,11 +6,15 @@ import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 import org.swiggy.order.Enum.OrderStatus;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
 public class Order {
 
+    @Setter
     @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,8 +36,14 @@ public class Order {
     private User user;
 
 
+    @Getter
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
+    @Setter
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderItem> orderItems = new ArrayList<>();
+
 
     public User getUser() {
         return user;
@@ -50,14 +60,9 @@ public class Order {
         this.status = OrderStatus.PROCESSING;
     }
 
-    public OrderStatus getStatus() {
-        return status;
+    public List<OrderItem> getOrderItems() {
+        return Collections.unmodifiableList(orderItems);
     }
-
-    public void setId(Long orderId) {
-        this.id = orderId;
-    }
-
 
     public void acceptOrder(){
         this.status = OrderStatus.ACCEPTED;

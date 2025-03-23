@@ -22,9 +22,6 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<?> createUser(@Valid @RequestBody UserRequest userRequest){
-        System.out.println("====================================================");
-        System.out.println("Creating user");
-        System.out.println("====================================================");
         userService.createUser(userRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body("Created user successfully");
     }

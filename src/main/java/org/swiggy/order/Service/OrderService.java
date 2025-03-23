@@ -17,7 +17,6 @@ import org.swiggy.order.Service.External.CatalogServiceClient;
 import org.swiggy.order.Service.Factory.OrderFactory;
 import org.swiggy.order.Service.UserService.UserService;
 
-import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 
@@ -50,15 +49,20 @@ public class OrderService {
             throw new ResourceDoesNotExistException("No menu items found for restaurant");
         }
 
-        Order order = orderFactory.createOrder(orderRequest.getRestaurantId(), user);
+        Order order = orderFactory.createOrder(
+                orderRequest.getRestaurantId(),
+                user,
+                orderRequest.getOrderItems(),
+                menuItemPrices
+        );
+
         order = orderRepository.save(order);
 
-        List<OrderItem> orderItems = orderFactory.createOrderItems(orderRequest, menuItemPrices, order);
+        List<OrderItem> orderItems = order.getOrderItems();
         orderItemRepository.saveAll(orderItems);
-        order.setTotalAmount(calculateTotalAmount(orderItems));
-        orderRepository.save(order);
         return fulfillmentService.assignDeliveryExecutive(order, orderRequest.getOrderItems());
     }
+
 
     public Order updateOrderStatus(Long restaurantId, Long orderId) throws ResourceDoesNotExistException {
             Order order = orderRepository.findByIdAndRestaurantId(orderId, restaurantId);
@@ -74,13 +78,5 @@ public class OrderService {
 
     }
 
-    private Money calculateTotalAmount(List<OrderItem> orderItems) {
-        Money totalAmount = new Money(0.0, Currency.getInstance("INR"));
-        for (OrderItem orderItem : orderItems) {
-            double val = orderItem.getPrice().getAmount() * orderItem.getQuantity();
-            totalAmount = totalAmount.add(new Money(val, orderItem.getPrice().getCurrency()));
-        }
-        return totalAmount;
-    }
 
 }
